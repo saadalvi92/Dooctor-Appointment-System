@@ -1,22 +1,25 @@
-import React from 'react';
+import React from "react";
 // import Constants from 'expo-constants';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-function Screen({children, style, top = false, details = false}) {
+import { SafeAreaView, StyleSheet, View } from "react-native";
+// import LinearGradient from "react-native-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient";
+function Screen({ children, style, top = false, details = false }) {
   return (
     <LinearGradient
-      colors={['#FFFFFF', '#00AEEF']}
+      colors={["#FFFFFF", "#00AEEF"]}
       style={styles.linearGradient}
-      start={{x: 1, y: 0}}
-      end={{x: 0, y: 3}}>
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 3 }}
+    >
       <SafeAreaView
         style={
           top
-            ? [styles.screen, style, {marginTop: '20%'}]
+            ? [styles.screen, style, { marginTop: "20%" }]
             : details
-            ? [styles.screen, style, {marginTop: '10%'}]
+            ? [styles.screen, style, { marginTop: "10%" }]
             : [styles.screen, style]
-        }>
+        }
+      >
         <View style={[styles.view, style]}>{children}</View>
       </SafeAreaView>
     </LinearGradient>

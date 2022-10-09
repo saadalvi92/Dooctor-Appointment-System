@@ -1,24 +1,24 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
-import {fontSize} from '../config/fonts';
-import AppText from './Text';
-import {RFValue} from 'react-native-responsive-fontsize';
+import React, { useState } from "react";
+import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { fontSize } from "../config/fonts";
+import AppText from "./Text";
+import { RFValue } from "react-native-responsive-fontsize";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-function HorizontalColorfulCardList({Data, setState}) {
+} from "react-native-responsive-screen";
+function HorizontalColorfulCardList({ Data, setState }) {
   const [List, setList] = useState(Data);
 
-  const changeBackground = item => {
+  const changeBackground = (item) => {
     let categesJSON = JSON.parse(JSON.stringify(List));
 
     for (let x = 0; x < categesJSON.length; x++) {
       if (categesJSON[x].id == item.id) {
-        categesJSON[x].color = categesJSON[x].border_color;
+        categesJSON[x].backgroundcolor = categesJSON[x].borderColor;
         setList(categesJSON);
       } else {
-        categesJSON[x].color = 'transparent';
+        categesJSON[x].backgroundcolor = "transparent";
         setList(categesJSON);
       }
     }
@@ -30,7 +30,7 @@ function HorizontalColorfulCardList({Data, setState}) {
         <Moods
           List={List}
           changeBackground={changeBackground}
-          setMood={e => {
+          setMood={(e) => {
             setState(e);
           }}
         />
@@ -39,37 +39,40 @@ function HorizontalColorfulCardList({Data, setState}) {
   );
 }
 
-const Moods = ({List, changeBackground, setMood}) => (
+const Moods = ({ List, changeBackground, setMood }) => (
   <View style={styles.moods}>
     {List.map((item, key) => (
       <TouchableOpacity
         key={key}
         style={{
-          width: wp('16.3%'),
-          height: hp('10.2%'),
-          alignItems: 'center',
-          justifyContent: 'center',
+          width: wp("16.3%"),
+          height: hp("10.2%"),
+          alignItems: "center",
+          justifyContent: "center",
           borderWidth: 1,
-          borderStyle: 'dotted',
-          borderColor: item.border_color,
-          backgroundColor: item.color,
+          borderStyle: "dotted",
+          borderColor: item.borderColor,
+          backgroundColor: item.backgroundcolor,
           borderRadius: 5,
           marginHorizontal: 3,
         }}
         onPress={() => {
           changeBackground(item);
           setMood(item);
-        }}>
+        }}
+      >
         <AppText
           style={{
-            fontWeight: '700',
+            fontWeight: "700",
             fontSize: RFValue(14),
             color:
-              item.color == 'transparent' || item.color == '#fff'
-                ? '#000'
-                : '#fff',
-          }}>
-          {item.title.toUpperCase()}
+              item.backgroundcolor == "transparent" ||
+              item.backgroundcolor == "#fff"
+                ? "#000"
+                : "#fff",
+          }}
+        >
+          {item.mood}
         </AppText>
       </TouchableOpacity>
     ))}
@@ -77,10 +80,10 @@ const Moods = ({List, changeBackground, setMood}) => (
 );
 
 const styles = StyleSheet.create({
-  container: {marginVertical: 10},
+  container: { marginVertical: 10 },
   moods: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 

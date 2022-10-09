@@ -1,14 +1,14 @@
-import React from 'react';
-import AppText from './Text';
-import colors from '../config/colors';
-import {Text, StyleSheet, View, Image, TouchableOpacity} from 'react-native';
-import moment from 'moment';
+import React from "react";
+import AppText from "./Text";
+import colors from "../config/colors";
+import { Text, StyleSheet, View, Image, TouchableOpacity } from "react-native";
+import moment from "moment";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
-} from 'react-native-responsive-screen';
-import {RFValue} from 'react-native-responsive-fontsize';
-import {baseUrl, imageUrl} from '../utils/baseUrl';
+} from "react-native-responsive-screen";
+import { RFValue } from "react-native-responsive-fontsize";
+import { baseUrl, imageUrl } from "../utils/baseUrl";
 function AppointmentsCard(props) {
   return (
     <TouchableOpacity
@@ -17,41 +17,43 @@ function AppointmentsCard(props) {
         paddingTop: 20,
         borderRadius: 20,
         flex: 1,
-        marginBottom: '5%',
+        marginBottom: "5%",
         backgroundColor: props.color,
-        justifyContent: 'center',
+        justifyContent: "center",
       }}
       onPress={() => {
         props.goto();
-      }}>
+      }}
+    >
       <View style={styles.profileCard}>
         <View
           style={{
             flex: 1,
-            marginRight: '3%',
-          }}>
+            marginRight: "3%",
+          }}
+        >
           {props.details.image == null ? (
             <Image
-              source={require('../assets/images/User.png')}
+              source={require("../assets/images/User.png")}
               resizeMode="cover"
-              style={{height: hp('8%'), width: wp('14%'), borderRadius: 10}}
+              style={{ height: hp("8%"), width: wp("14%"), borderRadius: 10 }}
             />
           ) : (
             <Image
               source={{
-                uri: `${imageUrl}${props.details.image}`,
+                uri: `${props.details.image}`,
               }}
               resizeMode="cover"
-              style={{height: hp('8%'), width: wp('14%'), borderRadius: 10}}
+              style={{ height: hp("8%"), width: wp("14%"), borderRadius: 10 }}
             />
           )}
-          <View style={{position: 'absolute', bottom: 22, right: 12}}>
-            {props.details.type == 'clinic' ? (
+          <View style={{ position: "absolute", bottom: 22, right: 12 }}>
+            {props.details.type == "clinic" ? (
               <Image
-                source={require('../assets/images/LocationAppointment.png')}
+                source={require("../assets/images/LocationAppointment.png")}
               />
             ) : (
-              <Image source={require('../assets/images/Video.png')} />
+              <Image source={require("../assets/images/Video.png")} />
             )}
           </View>
         </View>
@@ -60,30 +62,29 @@ function AppointmentsCard(props) {
             flex: 3,
             height: 110,
             // marginBottom: '2%',
-          }}>
-          <Text style={{color: '#9393aa', fontSize: RFValue(13)}}>
-            {props.details.type == 'clinic' ? 'Appointment' : 'Video Call'}
+          }}
+        >
+          <Text style={{ color: "#9393aa", fontSize: RFValue(13) }}>
+            {props.details.type == "clinic" ? "Appointment" : "Video Call"}
           </Text>
 
           <Text
             style={{
-              color: '#1e1f20',
+              color: "#1e1f20",
               fontSize: RFValue(15),
-              fontWeight: 'bold',
-            }}>
+              fontWeight: "bold",
+            }}
+          >
             {props.details.name}
           </Text>
-          <View style={{flexDirection: 'row'}}>
-            <AppText style={{color: '#1e1f20', fontSize: RFValue(13)}}>
-              {moment(props.details.start_time).format('hh:mm A')} -
+          <View style={{ flexDirection: "row" }}>
+            <AppText style={{ color: "#1e1f20", fontSize: RFValue(13) }}>
+              {moment(props.details.start_time).format("hh:mm A")} -
             </AppText>
-            <AppText style={{color: '#1e1f20', fontSize: RFValue(13)}}>
-              {moment(props.details.end_time).format('hh:mm A')}
+            <AppText style={{ color: "#1e1f20", fontSize: RFValue(13) }}>
+              {moment(props.details.end_time).format("hh:mm A")}
             </AppText>
           </View>
-          <AppText style={{color: '#1e1f20', fontSize: RFValue(13)}}>
-            {moment(props.details.start_time).format('MMMM Do YYYY')}
-          </AppText>
         </View>
       </View>
     </TouchableOpacity>
@@ -93,9 +94,9 @@ function AppointmentsCard(props) {
 export default AppointmentsCard;
 const styles = StyleSheet.create({
   profileCard: {
-    height: hp('12%'),
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignContent: 'center',
+    height: hp("12%"),
+    flexDirection: "row",
+    justifyContent: "center",
+    alignContent: "center",
   },
 });

@@ -1,15 +1,16 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, FlatList, RefreshControl} from 'react-native';
-import SearchField from '../components/SearchField';
-import AppointmentsCard from '../components/AppointmentsCard';
-import Screen from '../components/Screen';
-import Modal from '../components/Modal';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useIsFocused} from '@react-navigation/native';
-import Spinner from 'react-native-loading-spinner-overlay';
-import colors from '../config/colors';
-import {baseUrl} from '../utils/baseUrl';
+import React, { useState, useEffect } from "react";
+import { StyleSheet, FlatList, RefreshControl } from "react-native";
+import SearchField from "../components/SearchField";
+import AppointmentsCard from "../components/AppointmentsCard";
+import Screen from "../components/Screen";
+import Modal from "../components/Modal";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
+import Spinner from "react-native-loading-spinner-overlay";
+import colors from "../config/colors";
+import { collection, getDocs, getFirestore } from "firebase/firestore/lite";
+import { app } from "../../Firebase";
 function InPersonAppointment(props) {
   const isFocused = useIsFocused();
   const [data, setData] = useState([]);
@@ -18,93 +19,115 @@ function InPersonAppointment(props) {
   const [session, setSession] = useState({});
   const [refresh, setRefresh] = useState(true);
   const [filteredData, setFilteredData] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   useEffect(() => {
     getData();
   }, [refresh, isFocused]);
   const getData = async () => {
-    const defaultuser = await AsyncStorage.getItem('user');
-    const defaultsession = await AsyncStorage.getItem('session');
+    const defaultuser = await AsyncStorage.getItem("user");
     const currentUser = JSON.parse(defaultuser);
-    const currentSession = JSON.parse(defaultsession);
     setUser(currentUser);
-    setSession(currentSession);
-
-    if (currentUser.type == 'therapist') {
-      let config = {
-        method: 'get',
-        url: `${baseUrl}get_doc_bookings`,
-        headers: {
-          app_key: 'IAhnY5lVsCmm+dEKV3VPMBPiqN4NzIsh7CGK2VpKJc=',
-          session_token: currentSession.session_key,
-        },
-      };
-
-      axios(config)
-        .then(response => {
-          setLoading(false);
-          console.log('the new data is here', response.data);
-          const newData = response.data.data.clinic.map((item, index) => {
-            return {
-              name: item.user.name,
-              designation: item.user.type,
-              doc_id: item.user.id,
-              start_time: item.start_date,
-              end_time: item.end_date,
-              type: 'clinic',
-              id: item.id,
-              image: item.user.image,
-            };
+    if (currentUser.type == "Therapist") {
+      const db = getFirestore(app);
+      const col = collection(db, "Bookings");
+      const col2 = collection(db, "Users");
+      const snapShotUsers = await getDocs(col2);
+      if (snapShotUsers.empty) {
+        setLoading(false);
+        return;
+      }
+      let DoctorsData = [];
+      snapShotUsers.forEach((doc, index) => {
+        if (doc.data().type != "Therapist") {
+          DoctorsData.push({ ...doc.data(), id: doc.id });
+        }
+      });
+      const snapShot = await getDocs(col);
+      if (snapShot.empty) {
+        setLoading(false);
+        return;
+      }
+      let newData = [];
+      await snapShot.forEach((doc, index) => {
+        if (
+          doc.data().doc_id == currentUser.id &&
+          doc.data().type == "clinic"
+        ) {
+          DoctorsData.map((doctor, doc_index) => {
+            if (doctor.id == doc.data().client_id) {
+              newData.push({
+                ...doc.data(),
+                id: doc.id,
+                name: doctor.name,
+                designation: "Therapist",
+                doc_id: doctor.id,
+                gender: doctor.gender,
+                location: doctor.location,
+                image: doctor.image,
+              });
+            }
           });
-          setData(newData);
-          setFilteredData(newData);
-          setRefreshing(false);
-        })
-        .catch(error => {
-          setLoading(false);
-          console.log(error);
-        });
+        }
+      });
+      setData(newData);
+      setFilteredData(newData);
+      setRefreshing(false);
+
+      setLoading(false);
     } else {
-      let config = {
-        method: 'get',
-        url: `${baseUrl}get_client_booking`,
-        headers: {
-          app_key: 'IAhnY5lVsCmm+dEKV3VPMBPiqN4NzIsh7CGK2VpKJc=',
-          session_token: currentSession.session_key,
-        },
-      };
-
-      axios(config)
-        .then(response => {
-          setLoading(false);
-          console.log('the new data is here', response.data);
-          const newData = response.data.data.clinic.map((item, index) => {
-            return {
-              name: item.doctor.name,
-              designation: item.doctor.type,
-              doc_id: item.doctor.id,
-              start_time: item.start_date,
-              end_time: item.end_date,
-              type: 'clinic',
-              id: item.id,
-              image: item.doctor.image,
-            };
+      const db = getFirestore(app);
+      const col = collection(db, "Bookings");
+      const col2 = collection(db, "Users");
+      const snapShotUsers = await getDocs(col2);
+      if (snapShotUsers.empty) {
+        setLoading(false);
+        return;
+      }
+      let DoctorsData = [];
+      snapShotUsers.forEach((doc, index) => {
+        if (doc.data().type == "Therapist") {
+          DoctorsData.push({ ...doc.data(), id: doc.id });
+        }
+      });
+      const snapShot = await getDocs(col);
+      if (snapShot.empty) {
+        setLoading(false);
+        return;
+      }
+      let newData = [];
+      await snapShot.forEach((doc, index) => {
+        if (
+          doc.data().client_id == currentUser.id &&
+          doc.data().type == "clinic"
+        ) {
+          DoctorsData.map((doctor, doc_index) => {
+            if (doctor.id == doc.data().doc_id) {
+              newData.push({
+                ...doc.data(),
+                id: doc.id,
+                name: doctor.name,
+                designation: "Therapist",
+                doc_id: doctor.id,
+                gender: doctor.gender,
+                location: doctor.location,
+                image: doctor.image,
+              });
+            }
           });
-          setData(newData);
-          setFilteredData(newData);
-          setRefreshing(false);
-        })
-        .catch(error => {
-          setLoading(false);
-          console.log(error);
-        });
+        }
+      });
+      setData(newData);
+      setFilteredData(newData);
+      setRefreshing(false);
+
+      setLoading(false);
     }
   };
-  const SearchFilter = txt => {
+  const SearchFilter = (txt) => {
     if (txt) {
       const newData = data.filter(function (item) {
-        const itemData = item.name ? item.name.toUpperCase() : ''.toUpperCase();
+        const itemData = item.name ? item.name.toUpperCase() : "".toUpperCase();
         const textData = txt.toUpperCase();
         return itemData.indexOf(textData) > -1;
       });
@@ -125,7 +148,7 @@ function InPersonAppointment(props) {
         navigation={props.navigation}
         TouchNavigate={false}
         showMap={false}
-        search={txt => {
+        search={(txt) => {
           SearchFilter(txt);
         }}
         Title="Search Appointments"
@@ -133,9 +156,9 @@ function InPersonAppointment(props) {
       {loading ? (
         <Spinner
           visible={true}
-          textContent={''}
+          textContent={""}
           textStyle={{
-            color: '#FFF',
+            color: "#FFF",
           }}
           color={colors.danger}
         />
@@ -143,23 +166,16 @@ function InPersonAppointment(props) {
       <FlatList
         style={styles.description}
         data={filteredData}
-        key={item => {
+        key={(item) => {
           item.index;
         }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <AppointmentsCard
             goto={() => {
-              props.navigation.navigate('AppointmentDetails', {
-                data: item,
-                onPress: () => {
-                  setRefresh(!refresh);
-                },
-                user: user,
-                color: 'inperson',
-              });
+              console.log("the data is here", item);
             }}
             details={item}
             color="#fff"

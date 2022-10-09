@@ -1,15 +1,15 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {TextInput, View, StyleSheet, Animated, Image} from 'react-native';
+import React, { useEffect, useRef, useState } from "react";
+import { TextInput, View, StyleSheet, Animated, Image } from "react-native";
 // import { MaterialCommunityIcons } from "@expo/vector-icons";
 // import {MaterialCommunityIcons} from 'react-native-vector-icons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import defaultStyles from '../config/styles';
-import colors from '../config/colors';
-import Icon from 'react-native-vector-icons/Feather';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import Fontisto from 'react-native-vector-icons/Fontisto';
-const FadeInView = props => {
+import defaultStyles from "../config/styles";
+import colors from "../config/colors";
+import Icon from "react-native-vector-icons/Feather";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import Fontisto from "react-native-vector-icons/FontAwesome5";
+const FadeInView = (props) => {
   const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
 
   useEffect(() => {
@@ -26,7 +26,8 @@ const FadeInView = props => {
       style={{
         ...props.style,
         opacity: fadeAnim, // Bind opacity to animated value
-      }}>
+      }}
+    >
       {props.children}
     </Animated.View>
   );
@@ -35,19 +36,19 @@ const FadeInView = props => {
 function AppTextInput({
   eye = false,
   type,
-  width = '100%',
+  width = "100%",
   validEmail = false,
   setData,
   handleChangeText,
   location,
-  iconAlign = 'right',
+  iconAlign = "right",
   styles = {
     borderWidth: 1,
     borderColor: defaultStyles.colors.lightGray,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: 5,
-    backgroundColor: 'transparent',
-    color: '#ddd',
+    backgroundColor: "transparent",
+    color: "#ddd",
   },
   Address = false,
   price = false,
@@ -65,19 +66,19 @@ function AppTextInput({
         styles,
         {
           width,
-          flexDirection: iconAlign === 'right' ? 'row' : 'row-reverse',
+          flexDirection: iconAlign === "right" ? "row" : "row-reverse",
           marginBottom: 0,
         },
-      ]}>
+      ]}
+    >
       {price && (
-        <View style={{justifyContent: 'center'}}>
+        <View style={{ justifyContent: "center" }}>
           <Fontisto
             style={{
-              alignSelf: 'flex-end',
-
-              justifyContent: 'center',
+              alignSelf: "flex-end",
+              justifyContent: "center",
             }}
-            name={'dollar'}
+            name={"pound-sign"}
             size={15}
             color={colors.dark}
           />
@@ -86,18 +87,19 @@ function AppTextInput({
       {Address && (
         <View
           style={{
-            justifyContent: 'center',
-          }}>
-          <Image source={require('../assets/images/Adress.png')} />
+            justifyContent: "center",
+          }}
+        >
+          <Image source={require("../assets/images/Adress.png")} />
         </View>
       )}
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <TextInput
           selectionColor={colors.primary}
           placeholderTextColor={defaultStyles.colors.medium}
-          style={{color: '#000'}}
+          style={{ color: "#000" }}
           secureTextEntry={eyeIcon ? true : false}
-          onChangeText={text => handleChangeText(text)}
+          onChangeText={(text) => handleChangeText(text)}
           {...otherProps}
         />
       </View>
@@ -105,16 +107,17 @@ function AppTextInput({
       {eye && (
         <TouchableOpacity
           style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignSelf: 'center',
+            justifyContent: "center",
+            alignItems: "center",
+            alignSelf: "center",
             flex: 1,
           }}
-          onPress={toggleEyeIcon}>
+          onPress={toggleEyeIcon}
+        >
           {eyeIcon == true ? (
-            <Image source={require('../assets/images/LoginEye.png')} />
+            <Image source={require("../assets/images/LoginEye.png")} />
           ) : (
-            <Image source={require('../assets/images/EyeOpen.png')} />
+            <Image source={require("../assets/images/EyeOpen.png")} />
           )}
         </TouchableOpacity>
       )}
@@ -123,8 +126,9 @@ function AppTextInput({
           <View
             style={{
               flex: 1,
-              justifyContent: 'center',
-            }}>
+              justifyContent: "center",
+            }}
+          >
             {/* <MaterialCommunityIcons
               style={{
                 alignSelf: 'flex-end',
@@ -137,7 +141,7 @@ function AppTextInput({
               size={25}
               color={'green'}
             /> */}
-            <Image source={require('../assets/images/LoginCheck.png')} />
+            <Image source={require("../assets/images/LoginCheck.png")} />
           </View>
         </FadeInView>
       )}
@@ -145,10 +149,10 @@ function AppTextInput({
       {location && (
         <View>
           <MaterialCommunityIcons
-            name={'map-marker'}
+            name={"map-marker"}
             size={25}
             color={defaultStyles.colors.medium}
-            onPress={'toggleEyeIcon'}
+            onPress={"toggleEyeIcon"}
           />
         </View>
       )}
@@ -160,12 +164,12 @@ const styles = StyleSheet.create({
   container: {
     borderWidth: 1,
     borderColor: defaultStyles.colors.lightGray,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: 5,
     padding: 12,
     marginBottom: 20,
-    backgroundColor: 'transparent',
-    color: '#ddd',
+    backgroundColor: "transparent",
+    color: "#ddd",
   },
 
   textInput: defaultStyles.text,

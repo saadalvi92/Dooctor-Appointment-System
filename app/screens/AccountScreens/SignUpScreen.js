@@ -1,43 +1,49 @@
-import React, {useState} from 'react';
-import {View, StyleSheet, ScrollView, Text} from 'react-native';
-import Screen from '../../components/Screen';
-import AppText from '../../components/Text';
-import {fontSize} from '../../config/fonts';
-import colors from '../../config/colors';
-import AppButton from '../../components/Button';
-import {Formik} from 'formik';
-import AppFormField from '../../components/forms/FormField';
-import * as Yup from 'yup';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import {baseUrl} from '../../utils/baseUrl';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Spinner from 'react-native-loading-spinner-overlay';
+import React, { useState } from "react";
+import { View, StyleSheet, ScrollView, Text } from "react-native";
+import Screen from "../../components/Screen";
+import AppText from "../../components/Text";
+import { fontSize } from "../../config/fonts";
+import colors from "../../config/colors";
+import AppButton from "../../components/Button";
+import { Formik } from "formik";
+import AppFormField from "../../components/forms/FormField";
+import * as Yup from "yup";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Spinner from "react-native-loading-spinner-overlay";
+import {
+  addDoc,
+  getFirestore,
+  collection,
+  CollectionReference,
+} from "firebase/firestore/lite";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { app } from "../../../Firebase";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-import {RFValue} from 'react-native-responsive-fontsize';
+} from "react-native-responsive-screen";
+import { RFValue } from "react-native-responsive-fontsize";
 const validationSchema = Yup.object().shape({
-  email: Yup.string().required().email().label('Email'),
+  email: Yup.string().required().email().label("Email"),
   name: Yup.string().required(),
-  password: Yup.string().required().min(4).label('Password'),
+  password: Yup.string().required().min(4).label("Password"),
   passwordConfirm: Yup.string()
-    .oneOf([Yup.ref('password'), null], "Passwords don't match")
-    .required('Confirm Password is required'),
+    .oneOf([Yup.ref("password"), null], "Passwords don't match")
+    .required("Confirm Password is required"),
 });
 
-function SignUpScreen({navigation: {navigate, goBack}, route}) {
+function SignUpScreen({ navigation: { navigate, goBack }, route }) {
   return (
     <Screen style={styles.container} top={true}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={{flex: 2, justifyContent: 'center'}}>
+        <View style={{ flex: 2, justifyContent: "center" }}>
           <Header />
         </View>
         {console.log(route.params.data.userType)}
         {/* Form Fields */}
-        <View style={{flex: 8}}>
+        <View style={{ flex: 8 }}>
           <Form navigate={navigate} route={route} />
         </View>
       </ScrollView>
@@ -45,71 +51,41 @@ function SignUpScreen({navigation: {navigate, goBack}, route}) {
   );
 }
 
-const Form = ({navigate, route}) => {
+const Form = ({ navigate, route }) => {
   const [loading, setLoading] = useState(false);
-  const signUp = values => {
+  const signUp = (values) => {
     setLoading(true);
-    console.log(route.params.data);
-    var config = {
-      method: 'post',
-      url: `${baseUrl}register`,
-      headers: {
-        app_key: 'IAhnY5lVsCmm+dEKV3VPMBPiqN4NzIsh7CGK2VpKJc=',
-      },
-      data: {
+    if (route.params.data.userType.label == "Client") {
+      navigate("InformationScreen", {
         email: values.email,
         password: values.password,
         name: values.name,
-        type: route.params.data.userType.label,
-      },
-    };
-    axios(config)
-      .then(function (response) {
-        setLoading(false);
-        if (response.data.status == 'success') {
-          console.log('The user is ', response.data.data.user);
-          console.log('The session is ', response.data.data.session);
-          AsyncStorage.setItem('user', JSON.stringify(response.data.data.user));
-          AsyncStorage.setItem(
-            'session',
-            JSON.stringify(response.data.data.session),
-          );
-          if (response.data.data.user.type == 'Client') {
-            navigate('InformationScreen', {
-              data: response.data.data.session,
-              user: response.data.data.user,
-            });
-          } else if (response.data.data.user.type == 'Practice') {
-            console.log('The user is Practice');
-            navigate('InformationScreenPractice', {data: response.data.data});
-          } else if (response.data.data.user.type == 'Therapist') {
-            navigate('InformationScreenTherapist', {data: response.data.data});
-          }
-        }
-      })
-      .catch(function (error) {
-        setLoading(false);
-        console.log(error.response.data.message);
-        alert(error.response.data.message);
+        confirmPassword: values.passwordConfirm,
+        data: route.params.data,
       });
+    } else if (route.params.data.userType.label == "Therapist") {
+      navigate("InformationScreenTherapist", {
+        email: values.email,
+        password: values.password,
+        name: values.name,
+        data: route.params.data,
+        confirmPassword: values.passwordConfirm,
+      });
+    }
   };
   return (
-    <View style={{justifyContent: 'center'}}>
-      {loading ? (
-        <Spinner
-          visible={true}
-          textContent={''}
-          textStyle={{
-            color: '#FFF',
-          }}
-          color={colors.danger}
-        />
-      ) : null}
+    <View style={{ justifyContent: "center" }}>
       <Formik
-        initialValues={{email: '', password: '', passwordConfirm: '', name: ''}}
-        onSubmit={values => signUp(values)}
-        validationSchema={validationSchema}>
-        {({handleChange, handleSubmit, setFieldTouched}) => (
+        initialValues={{
+          email: "",
+          password: "",
+          passwordConfirm: "",
+          name: "",
+        }}
+        onSubmit={(values) => signUp(values)}
+        validationSchema={validationSchema}
+      >
+        {({ handleChange, handleSubmit, setFieldTouched }) => (
           <>
             <Text style={styles.text}>Name</Text>
             <AppFormField
@@ -120,7 +96,7 @@ const Form = ({navigate, route}) => {
               // placeholder="Name"
               textContentType="name"
               styles={styles.AppTextInput}
-              width={wp('85%')}
+              width={wp("85%")}
             />
             <Text style={styles.text}>Email</Text>
             <AppFormField
@@ -132,7 +108,7 @@ const Form = ({navigate, route}) => {
               // placeholder="email"
               textContentType="emailAddress"
               styles={styles.AppTextInput}
-              width={wp('85%')}
+              width={wp("85%")}
             />
             <Text style={styles.text}>Password</Text>
             <AppFormField
@@ -140,13 +116,13 @@ const Form = ({navigate, route}) => {
               autoCapitalize="none"
               autoCorrect={false}
               icon="lock"
-              onBlur={() => setFieldTouched('password')}
-              onChangeText={handleChange('password')}
+              onBlur={() => setFieldTouched("password")}
+              onChangeText={handleChange("password")}
               // placeholder="password"
               textContentType="password"
               eye
               styles={styles.AppTextInput}
-              width={wp('85%')}
+              width={wp("85%")}
             />
             {/* <AppText>Confirm Password</AppText> */}
             <Text style={styles.text}>Confirm Password</Text>
@@ -155,13 +131,13 @@ const Form = ({navigate, route}) => {
               autoCapitalize="none"
               autoCorrect={false}
               icon="lock"
-              onBlur={() => setFieldTouched('passwordConfirm')}
-              onChangeText={handleChange('passwordConfirm')}
+              onBlur={() => setFieldTouched("passwordConfirm")}
+              onChangeText={handleChange("passwordConfirm")}
               // placeholder="password"
               textContentType="password"
               eye
               styles={styles.AppTextInput}
-              width={wp('85%')}
+              width={wp("85%")}
             />
             <AppButton title="Sign Up" onPress={handleSubmit} />
           </>
@@ -170,18 +146,21 @@ const Form = ({navigate, route}) => {
       <View
         style={{
           marginVertical: 20,
-          justifyContent: 'center',
-          flexDirection: 'row',
-        }}>
-        <AppText style={{textAlign: 'center', fontSize: 14}}>
-          Already have an account?{' '}
+          justifyContent: "center",
+          flexDirection: "row",
+        }}
+      >
+        <AppText style={{ textAlign: "center", fontSize: 14 }}>
+          Already have an account?{" "}
         </AppText>
         <TouchableOpacity
           onPress={() => {
-            navigate('LoginScreen', {data: route.params.data});
-          }}>
+            navigate("LoginScreen", { data: route.params.data });
+          }}
+        >
           <AppText
-            style={{color: colors.dark, fontSize: 14, fontWeight: 'bold'}}>
+            style={{ color: colors.dark, fontSize: 14, fontWeight: "bold" }}
+          >
             Log In
           </AppText>
         </TouchableOpacity>
@@ -195,39 +174,40 @@ const Header = () => (
     <AppText
       style={{
         fontSize: 24,
-        fontWeight: '700',
+        fontWeight: "700",
         color: colors.dark,
         paddingBottom: 5,
-      }}>
+      }}
+    >
       Welcome to TherAlign!
     </AppText>
-    <AppText style={{paddingBottom: 20, fontSize: 13}}>
+    <AppText style={{ paddingBottom: 20, fontSize: 13 }}>
       Join 1M+ top Therapist today, for free!
     </AppText>
   </View>
 );
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 10},
+  container: { flex: 1, padding: 10 },
 
   AppTextInput: {
     borderWidth: 1,
-    borderColor: '#a4c8d5',
-    flexDirection: 'row',
+    borderColor: "#a4c8d5",
+    flexDirection: "row",
     borderRadius: 4,
     paddingHorizontal: 12,
     marginBottom: 20,
-    backgroundColor: 'transparent',
-    color: '#A4C8D5',
-    paddingVertical: '0.8%',
-    alignSelf: 'center',
+    backgroundColor: "transparent",
+    color: "#A4C8D5",
+    paddingVertical: "0.8%",
+    alignSelf: "center",
   },
   text: {
     fontSize: RFValue(14),
-    fontWeight: '500',
-    color: '#000',
-    marginBottom: '1%',
-    marginLeft: '4%',
+    fontWeight: "500",
+    color: "#000",
+    marginBottom: "1%",
+    marginLeft: "4%",
   },
 });
 

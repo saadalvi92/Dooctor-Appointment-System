@@ -1,84 +1,82 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, FlatList, ScrollView} from 'react-native';
-import Header from '../components/Header';
-import Screen from '../components/Screen';
-import SearchField from '../components/SearchField';
-import ListingTherapist from '../components/ListingTherapist';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Spinner from 'react-native-loading-spinner-overlay';
-import colors from '../config/colors';
-import {RFValue} from 'react-native-responsive-fontsize';
+import React, { useState, useEffect } from "react";
+import { StyleSheet, FlatList, ScrollView } from "react-native";
+import Header from "../components/Header";
+import Screen from "../components/Screen";
+import SearchField from "../components/SearchField";
+import ListingTherapist from "../components/ListingTherapist";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Spinner from "react-native-loading-spinner-overlay";
+import colors from "../config/colors";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
-} from 'react-native-responsive-screen';
-import {baseUrl} from '../utils/baseUrl';
+} from "react-native-responsive-screen";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  Firestore,
+} from "firebase/firestore/lite";
+import { app } from "../../Firebase";
 function TherapistListingScreen(props) {
   const [data, setData] = useState([]);
   const [user, setUser] = useState({});
   const [session, setSession] = useState({});
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     getData();
   }, []);
   const getData = async () => {
-    const data = await AsyncStorage.getItem('user');
-    const data1 = await AsyncStorage.getItem('session');
-    const userData = JSON.parse(data);
-    const userSession = JSON.parse(data1);
-    setUser(userData);
-    setSession(userSession);
-    let config = {
-      method: 'get',
-      url: `${baseUrl}search?q=${search}&lat=0&lng=0`,
-      headers: {
-        app_key: 'IAhnY5lVsCmm+dEKV3VPMBPiqN4NzIsh7CGK2VpKJc=',
-        session_token: userSession.session_key,
-      },
-    };
-
-    axios(config)
-      .then(response => {
-        setLoading(false);
-        const responsedata = response.data.data.users.map((item, index) => {
-          return {
-            id: item.id,
-            name: item.name,
-            designation: item.type,
-            image: item.image,
-            fee: item.fee,
-            distance: item.distance,
-            rating: item.avg_rating == null ? 5 : item.avg_rating,
-            reviews: item.rating_count,
-            location: item.location,
-            email: item.email,
-            age: item.age,
-            lng: item.lng,
-            lat: item.lat,
-          };
+    const db = getFirestore(app);
+    const Users = collection(db, "Users");
+    const snapShot = await getDocs(Users);
+    if (snapShot.empty) {
+      setLoading(false);
+      return;
+    }
+    let newData = [];
+    snapShot.forEach((doc, index) => {
+      if (doc.data().type == "Therapist") {
+        newData.push({
+          id: doc.id,
+          name: doc.data().name,
+          designation: doc.data().type,
+          image: doc.data().image,
+          fee: doc.data().fee,
+          distance: doc.data().distance,
+          rating:
+            doc.data().avg_rating == null || doc.data().avg_rating == undefined
+              ? 5
+              : doc.data().avg_rating,
+          reviews: 0,
+          location: doc.data().location,
+          email: doc.data().email,
+          age: doc.data().age,
+          lng: doc.data().lng,
+          lat: doc.data().lat,
+          unAvailability: doc.data().Unavailability,
         });
-        setData(responsedata);
-      })
-      .catch(error => {
-        setLoading(false);
-        console.log(error);
-      });
+      }
+    });
+    setData(newData);
+    setLoading(false);
   };
   return (
     <Screen style={styles.container}>
       <ScrollView
-        contentContainerStyle={{flexGrow: 1}}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <Header />
         {loading ? (
           <Spinner
             visible={true}
-            textContent={''}
+            textContent={""}
             textStyle={{
-              color: '#FFF',
+              color: "#FFF",
             }}
             color={colors.danger}
           />
@@ -86,7 +84,7 @@ function TherapistListingScreen(props) {
         <SearchField
           navigation={props.navigation}
           TouchNavigate={false}
-          search={txt => {
+          search={(txt) => {
             setSearch(txt);
             getData();
           }}
@@ -94,21 +92,16 @@ function TherapistListingScreen(props) {
         <FlatList
           style={styles.description}
           data={data}
-          key={item => {
+          key={(item) => {
             item.index;
           }}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <ListingTherapist
               goto={() => {
-                item.designation == 'practice'
-                  ? props.navigation.navigate('TherapistinPracticeScreen', {
-                      isFocus: true,
-                      data: item,
-                    })
-                  : props.navigation.navigate('AppointmentScreen', {
-                      isFocus: true,
-                      data: item,
-                    });
+                props.navigation.navigate("AppointmentScreen", {
+                  isFocus: true,
+                  data: item,
+                });
               }}
               details={item}
             />
@@ -131,7 +124,7 @@ const styles = StyleSheet.create({
     marginVertical: 25,
   },
   profileCard: {
-    height: hp('20%'),
-    flexDirection: 'row',
+    height: hp("20%"),
+    flexDirection: "row",
   },
 });
